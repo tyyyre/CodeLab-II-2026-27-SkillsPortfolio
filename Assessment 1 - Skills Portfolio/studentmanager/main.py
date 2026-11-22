@@ -64,6 +64,117 @@ def loadStudents():
 
 
 # Function to display the main menu
+
+# Calculate a student's total coursework marks
+def calculateCoursework(student):
+    return (
+        student["course1"] +
+        student["course2"] +
+        student["course3"]
+    )
+
+
+# Calculate the overall percentage out of 160 marks
+def calculatePercentage(student):
+    coursework = calculateCoursework(student)
+    total = coursework + student["exam"]
+
+    percentage = (total / 160) * 100
+    return percentage
+
+
+# Decide the student's grade
+def calculateGrade(percentage):
+    if percentage >= 70:
+        return "A"
+    elif percentage >= 60:
+        return "B"
+    elif percentage >= 50:
+        return "C"
+    elif percentage >= 40:
+        return "D"
+    else:
+        return "F"
+
+
+# Remove the current screen
+def clearWindow():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+# Display all student records
+def viewAllStudents():
+    clearWindow()
+
+    tk.Label(
+        root,
+        text="All Student Records",
+        font=("Arial", 23, "bold"),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR
+    ).pack(pady=20)
+
+    # Create a text area for displaying records
+    records_text = tk.Text(
+        root,
+        width=85,
+        height=23,
+        font=("Consolas", 10),
+        bg=WHITE,
+        fg=TEXT_COLOR,
+        padx=10,
+        pady=10
+    )
+    records_text.pack(padx=15, pady=10)
+
+    total_percentage = 0
+
+    # Display each student's information
+    for student in students:
+        coursework = calculateCoursework(student)
+        percentage = calculatePercentage(student)
+        grade = calculateGrade(percentage)
+
+        total_percentage += percentage
+
+        record = (
+            f"Name: {student['name']}\n"
+            f"Student Number: {student['code']}\n"
+            f"Coursework: {coursework}/60\n"
+            f"Exam Mark: {student['exam']}/100\n"
+            f"Overall Percentage: {percentage:.2f}%\n"
+            f"Grade: {grade}\n"
+            "----------------------------------------\n"
+        )
+
+        records_text.insert(tk.END, record)
+
+    # Calculate the class average
+    if students:
+        average = total_percentage / len(students)
+    else:
+        average = 0
+
+    # Display class summary
+    records_text.insert(
+        tk.END,
+        f"\nTotal Students: {len(students)}\n"
+        f"Class Average: {average:.2f}%"
+    )
+
+    # Prevent editing the records
+    records_text.config(state="disabled")
+
+    # Return to the main menu
+    tk.Button(
+        root,
+        text="Back to Menu",
+        font=("Arial", 12),
+        bg=BLUE_COLOR,
+        fg=WHITE,
+        command=displayMenu
+    ).pack(pady=10)
+
 def displayMenu():
 
     # Application heading
