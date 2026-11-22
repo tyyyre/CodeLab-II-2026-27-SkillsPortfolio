@@ -2,76 +2,44 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
+import os
 
 # Create the main application window
 root = tk.Tk()
-
-# Set the window title
 root.title("Alexa Tell Me a Joke")
-
-# Set the window size
-root.geometry("600x450")
-
-# Prevent the window from being resized
+root.geometry("650x500")
 root.resizable(False, False)
-
-# Set the background colour
 root.configure(bg="#152238")
 
+# Colours used in the application
+background_color = "#152238"
+button_color = "#2874A6"
+text_color = "white"
 
-# Function to display the welcome screen
-def displayWelcome():
-    # Display the application title
-    title_label = tk.Label(
-        root,
-        text="Alexa Tell Me a Joke",
-        font=("Arial", 24, "bold"),
-        bg="#152238",
-        fg="white"
-    )
-    title_label.pack(pady=40)
-
-    # Display a welcome message
-    welcome_label = tk.Label(
-        root,
-        text="Welcome! Ready for some jokes?",
-        font=("Arial", 15),
-        bg="#152238",
-        fg="white"
-    )
-    welcome_label.pack(pady=20)
-
-    # Button to get a random joke
-    joke_button = tk.Button(
-        root,
-        text="Tell Me a Joke",
-        font=("Arial", 13),
-        bg="#2874A6",
-        fg="white",
-        command=displayJoke
-    )
-    joke_button.pack(pady=15)
-        # Display the joke question below the button
-    joke_label.pack(pady=10)
-
-    # Display the punchline below the question
-    punchline_label.pack(pady=10)
+# Store the jokes and current punchline
+jokes = []
+current_punchline = ""
 
 
-
-# Function to read jokes from the text file
+# Function to load jokes from the text file
 def loadJokes():
-    jokes = []
+    jokes_list = []
+
+    # Find the folder where main.py is saved
+    folder_path = os.path.dirname(os.path.abspath(__file__))
+
+    # Create the full path to randomJokes.txt
+    file_path = os.path.join(folder_path, "randomJokes.txt")
 
     try:
-        # Open the jokes file
-        with open("randomJokes.txt", "r", encoding="utf-8") as file:
+        # Open the file and read each joke
+        with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
                 line = line.strip()
 
                 # Ignore empty lines
                 if line:
-                    jokes.append(line)
+                    jokes_list.append(line)
 
     except FileNotFoundError:
         messagebox.showerror(
@@ -79,12 +47,14 @@ def loadJokes():
             "randomJokes.txt could not be found."
         )
 
-    return jokes
+    return jokes_list
+
 
 # Function to display a random joke
 def displayJoke():
     global current_punchline
 
+    # Check if any jokes are available
     if not jokes:
         messagebox.showwarning(
             "No Jokes",
@@ -92,10 +62,10 @@ def displayJoke():
         )
         return
 
-    # Select a random joke from the list
+    # Select a random joke
     selected_joke = random.choice(jokes)
 
-    # Separate the question and punchline
+    # Separate the joke question and punchline
     if "?" in selected_joke:
         question, punchline = selected_joke.split("?", 1)
 
@@ -111,35 +81,106 @@ def displayJoke():
     # Hide the previous punchline
     punchline_label.config(text="")
 
-# Load all jokes into a list
+    # Enable the punchline button
+    punchline_button.config(state="normal")
+
+
+# Function to reveal the punchline
+def showPunchline():
+    if current_punchline:
+        punchline_label.config(
+            text=current_punchline
+        )
+
+        # Disable button after showing the punchline
+        punchline_button.config(state="disabled")
+
+    else:
+        messagebox.showinfo(
+            "Joke Teller",
+            "Please select a joke first."
+        )
+
+
+# Function to display the welcome screen
+def displayWelcome():
+    global joke_label, punchline_label, punchline_button
+
+    # Application title
+    title_label = tk.Label(
+        root,
+        text="Alexa Tell Me a Joke",
+        font=("Arial", 24, "bold"),
+        bg=background_color,
+        fg=text_color
+    )
+    title_label.pack(pady=30)
+
+    # Welcome message
+    welcome_label = tk.Label(
+        root,
+        text="Welcome! Ready for some jokes?",
+        font=("Arial", 15),
+        bg=background_color,
+        fg=text_color
+    )
+    welcome_label.pack(pady=10)
+
+    # Button to select a random joke
+    joke_button = tk.Button(
+        root,
+        text="Tell Me a Joke",
+        font=("Arial", 13),
+        bg=button_color,
+        fg="white",
+        width=20,
+        command=displayJoke
+    )
+    joke_button.pack(pady=15)
+
+    # Label to display the joke question
+    joke_label = tk.Label(
+        root,
+        text="Your joke will appear here!",
+        font=("Arial", 15),
+        bg=background_color,
+        fg=text_color,
+        wraplength=550,
+        justify="center"
+    )
+    joke_label.pack(pady=15)
+
+    # Button to reveal the punchline
+    punchline_button = tk.Button(
+        root,
+        text="Show Punchline",
+        font=("Arial", 13),
+        bg=button_color,
+        fg="white",
+        width=20,
+        state="disabled",
+        command=showPunchline
+    )
+    punchline_button.pack(pady=15)
+
+    # Label to display the punchline
+    punchline_label = tk.Label(
+        root,
+        text="",
+        font=("Arial", 14, "bold"),
+        bg=background_color,
+        fg="#58D68D",
+        wraplength=550,
+        justify="center"
+    )
+    punchline_label.pack(pady=15)
+
+
+# Load jokes when the application starts
 jokes = loadJokes()
 
-# Store the current joke's punchline
-current_punchline = ""
-
-# Label to display the joke question
-joke_label = tk.Label(
-    root,
-    text="",
-    font=("Arial", 14),
-    bg="#152238",
-    fg="white",
-    wraplength=500
-)
-
-# Label to display the punchline later
-punchline_label = tk.Label(
-    root,
-    text="",
-    font=("Arial", 13),
-    bg="#152238",
-    fg="#58D68D",
-    wraplength=500
-)
-
-
-# Call the welcome function
+# Display the welcome screen
 displayWelcome()
 
-# Keep the window running
+# Keep the application running
 root.mainloop()
