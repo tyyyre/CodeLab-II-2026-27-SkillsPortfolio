@@ -41,6 +41,23 @@ def displayWelcome():
     )
     welcome_label.pack(pady=20)
 
+    # Button to get a random joke
+    joke_button = tk.Button(
+        root,
+        text="Tell Me a Joke",
+        font=("Arial", 13),
+        bg="#2874A6",
+        fg="white",
+        command=displayJoke
+    )
+    joke_button.pack(pady=15)
+        # Display the joke question below the button
+    joke_label.pack(pady=10)
+
+    # Display the punchline below the question
+    punchline_label.pack(pady=10)
+
+
 
 # Function to read jokes from the text file
 def loadJokes():
@@ -64,8 +81,62 @@ def loadJokes():
 
     return jokes
 
+# Function to display a random joke
+def displayJoke():
+    global current_punchline
+
+    if not jokes:
+        messagebox.showwarning(
+            "No Jokes",
+            "There are no jokes available."
+        )
+        return
+
+    # Select a random joke from the list
+    selected_joke = random.choice(jokes)
+
+    # Separate the question and punchline
+    if "?" in selected_joke:
+        question, punchline = selected_joke.split("?", 1)
+
+        question = question.strip() + "?"
+        current_punchline = punchline.strip()
+    else:
+        question = selected_joke
+        current_punchline = ""
+
+    # Display the joke question
+    joke_label.config(text=question)
+
+    # Hide the previous punchline
+    punchline_label.config(text="")
+
 # Load all jokes into a list
 jokes = loadJokes()
+
+# Store the current joke's punchline
+current_punchline = ""
+
+# Label to display the joke question
+joke_label = tk.Label(
+    root,
+    text="",
+    font=("Arial", 14),
+    bg="#152238",
+    fg="white",
+    wraplength=500
+)
+
+# Label to display the punchline later
+punchline_label = tk.Label(
+    root,
+    text="",
+    font=("Arial", 13),
+    bg="#152238",
+    fg="#58D68D",
+    wraplength=500
+)
+
 
 # Call the welcome function
 displayWelcome()
