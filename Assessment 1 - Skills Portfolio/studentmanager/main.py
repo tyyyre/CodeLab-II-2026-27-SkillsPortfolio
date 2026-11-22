@@ -336,6 +336,81 @@ def viewIndividualStudent():
         command=displayMenu
     ).pack(pady=10)
 
+# Display the student with the highest or lowest total mark
+def showExtremeStudent(highest=True):
+    clearWindow()
+
+    # Check that student records are available
+    if not students:
+        messagebox.showwarning(
+            "No Students",
+            "There are no student records available."
+        )
+        displayMenu()
+        return
+
+    # Find the student using their total marks
+    if highest:
+        selected_student = max(
+            students,
+            key=lambda student: (
+                calculateCoursework(student) + student["exam"]
+            )
+        )
+        heading = "Highest Scoring Student"
+    else:
+        selected_student = min(
+            students,
+            key=lambda student: (
+                calculateCoursework(student) + student["exam"]
+            )
+        )
+        heading = "Lowest Scoring Student"
+
+    # Calculate the selected student's results
+    coursework = calculateCoursework(selected_student)
+    total = coursework + selected_student["exam"]
+    percentage = calculatePercentage(selected_student)
+    grade = calculateGrade(percentage)
+
+    # Display the heading
+    tk.Label(
+        root,
+        text=heading,
+        font=("Arial", 23, "bold"),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR
+    ).pack(pady=35)
+
+    # Display the student's information
+    tk.Label(
+        root,
+        text=(
+            f"Name: {selected_student['name']}\n\n"
+            f"Student Number: {selected_student['code']}\n\n"
+            f"Coursework: {coursework}/60\n\n"
+            f"Exam Mark: {selected_student['exam']}/100\n\n"
+            f"Total Marks: {total}/160\n\n"
+            f"Overall Percentage: {percentage:.2f}%\n\n"
+            f"Grade: {grade}"
+        ),
+        font=("Arial", 14),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR,
+        justify="left"
+    ).pack(pady=20)
+
+    # Back button
+    tk.Button(
+        root,
+        text="Back to Menu",
+        font=("Arial", 12),
+        bg=BLUE_COLOR,
+        fg=WHITE,
+        width=20,
+        command=displayMenu
+    ).pack(pady=20)
+
 displayMenu()
 
 
