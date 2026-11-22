@@ -6,13 +6,14 @@ import random
 # Main application window
 root = tk.Tk()
 root.title("Maths Quiz")
-root.geometry("600x450")
+root.geometry("600x500")
 root.resizable(False, False)
 
 # Application colours
 BG_COLOR = "#172033"
 FG_COLOR = "#FFFFFF"
 BUTTON_COLOR = "#4169E1"
+
 root.configure(bg=BG_COLOR)
 
 # Quiz variables
@@ -20,6 +21,7 @@ min_number = 1
 max_number = 9
 question_number = 0
 score = 0
+
 first_number = 0
 second_number = 0
 operation = "+"
@@ -33,7 +35,7 @@ def clear_window():
         widget.destroy()
 
 
-# Display the difficulty selection menu
+# Display the home menu
 def displayMenu():
     clear_window()
 
@@ -53,7 +55,7 @@ def displayMenu():
         fg=FG_COLOR
     ).pack(pady=15)
 
-    # Difficulty levels and their number ranges
+    # Available difficulty levels
     difficulties = [
         ("Easy", 1, 9),
         ("Moderate", 10, 99),
@@ -83,7 +85,7 @@ def decideOperation():
     return random.choice(["+", "-"])
 
 
-# Start the quiz with the selected difficulty
+# Start a new quiz
 def startQuiz(minimum, maximum):
     global min_number, max_number
     global question_number, score, attempts
@@ -91,7 +93,7 @@ def startQuiz(minimum, maximum):
     min_number = minimum
     max_number = maximum
 
-    # Reset quiz values
+    # Reset all quiz values
     question_number = 0
     score = 0
     attempts = 0
@@ -99,16 +101,19 @@ def startQuiz(minimum, maximum):
     displayProblem()
 
 
-# Display the current maths question
+# Display a maths question
 def displayProblem():
     global first_number, second_number
     global operation, correct_answer, attempts
+    global answer_entry, feedback_label
 
     clear_window()
 
-    # Generate random numbers and operation
+    # Generate two random numbers
     first_number = randomInt(min_number, max_number)
     second_number = randomInt(min_number, max_number)
+
+    # Select addition or subtraction
     operation = decideOperation()
 
     # Calculate the correct answer
@@ -119,16 +124,16 @@ def displayProblem():
 
     attempts = 0
 
-    # Question heading
+    # Quiz heading
     tk.Label(
         root,
         text="MATHS QUIZ",
         font=("Arial", 24, "bold"),
         bg=BG_COLOR,
         fg=FG_COLOR
-    ).pack(pady=20)
+    ).pack(pady=15)
 
-    # Display question number and score
+    # Display question number
     tk.Label(
         root,
         text=f"Question {question_number + 1} of 10",
@@ -137,6 +142,7 @@ def displayProblem():
         fg=FG_COLOR
     ).pack(pady=5)
 
+    # Display current score
     tk.Label(
         root,
         text=f"Score: {score}/100",
@@ -145,17 +151,16 @@ def displayProblem():
         fg="#FFD700"
     ).pack(pady=5)
 
-    # Display the maths problem
+    # Display the maths question
     tk.Label(
         root,
         text=f"{first_number} {operation} {second_number} = ?",
         font=("Arial", 30, "bold"),
         bg=BG_COLOR,
         fg=FG_COLOR
-    ).pack(pady=25)
+    ).pack(pady=20)
 
     # Answer input field
-    global answer_entry
     answer_entry = tk.Entry(
         root,
         font=("Arial", 18),
@@ -176,8 +181,7 @@ def displayProblem():
         command=checkAnswer
     ).pack(pady=10)
 
-    # Feedback label
-    global feedback_label
+    # Feedback message
     feedback_label = tk.Label(
         root,
         text="Enter your answer above",
@@ -187,6 +191,17 @@ def displayProblem():
     )
     feedback_label.pack(pady=5)
 
+    # Back button to return to home menu
+    tk.Button(
+        root,
+        text="← Back to Home",
+        font=("Arial", 11),
+        bg="#555555",
+        fg=FG_COLOR,
+        width=18,
+        command=displayMenu
+    ).pack(pady=10)
+
 
 # Check the user's answer
 def checkAnswer():
@@ -194,7 +209,7 @@ def checkAnswer():
 
     user_answer = answer_entry.get()
 
-    # Check that the user entered a number
+    # Check whether the input is a valid number
     try:
         user_answer = int(user_answer)
     except ValueError:
@@ -207,30 +222,35 @@ def checkAnswer():
     attempts += 1
 
     if user_answer == correct_answer:
+
+        # Award points for a correct answer
         isCorrect(True)
+
         question_number += 1
 
         if question_number == 10:
             messagebox.showinfo(
                 "Quiz Complete",
-                f"You have completed all 10 questions!\n"
-                f"Your score is {score}/100"
+                f"You completed all 10 questions!\n\n"
+                f"Your score: {score}/100"
             )
             displayMenu()
         else:
             root.after(1200, displayProblem)
 
     else:
+
         if attempts == 1:
-            isCorrect(False)
             feedback_label.config(
-                text="Wrong answer! Try one more time.",
+                text="Incorrect! Try one more time.",
                 fg="#FF6666"
             )
+
             answer_entry.delete(0, tk.END)
+
         else:
             feedback_label.config(
-                text=f"Incorrect! The answer was {correct_answer}.",
+                text=f"Incorrect! Correct answer: {correct_answer}",
                 fg="#FF6666"
             )
 
@@ -239,34 +259,36 @@ def checkAnswer():
             if question_number == 10:
                 messagebox.showinfo(
                     "Quiz Complete",
-                    f"You have completed all 10 questions!\n"
-                    f"Your score is {score}/100"
+                    f"You completed all 10 questions!\n\n"
+                    f"Your score: {score}/100"
                 )
                 displayMenu()
             else:
                 root.after(1500, displayProblem)
 
 
-# Display whether the answer is correct
+# Check whether the answer is correct and award points
 def isCorrect(correct):
     global score
 
     if correct:
         if attempts == 1:
             score += 10
+
             feedback_label.config(
                 text="Correct! You earned 10 points.",
                 fg="#66FF99"
             )
         else:
             score += 5
+
             feedback_label.config(
                 text="Correct! You earned 5 points.",
                 fg="#66FF99"
             )
 
 
-# Display the initial menu
+# Display the starting menu
 displayMenu()
 
 # Run the application
