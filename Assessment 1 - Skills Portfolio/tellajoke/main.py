@@ -4,42 +4,90 @@ from tkinter import messagebox
 import random
 import os
 
-# Create the main application window
+# Sky Blue theme colours
+BG_COLOR = "#F0F5FF"
+CHAT_COLOR = "#DCE7FA"
+BLUE_COLOR = "#3478D4"
+TEXT_COLOR = "#253A59"
+GREY_COLOR = "#64748B"
+WHITE = "#FFFFFF"
+
+# Create the main window
 root = tk.Tk()
 root.title("Alexa Tell Me a Joke")
-root.geometry("650x500")
+root.geometry("650x650")
 root.resizable(False, False)
-root.configure(bg="#152238")
+root.configure(bg=BG_COLOR)
 
-# Colours used in the application
-background_color = "#152238"
-button_color = "#2874A6"
-text_color = "white"
-
-# Store the jokes and current punchline
+# Store the jokes and current conversation
 jokes = []
 current_punchline = ""
+current_response = ""
+
+# Human responses for the different jokes
+# These match the order of the jokes in randomJokes.txt
+human_responses = [
+    "Why?",                  # Chicken
+    "What happens?",         # Clown
+    "Why?",                  # Car
+    "How?",                  # Hipster
+    "What did he say?",      # Janitor
+    "No, what happened?",    # Band
+    "Why?",                  # Golfer
+    "Why?",                  # Maths
+    "Why?",                  # Pirates
+    "Why?",                  # Mushroom
+    "Why?",                  # Bananas
+    "What did he say?",      # Buffalo
+    "Why not?",              # Cornfield
+    "What?",                 # Carbs
+    "Why?",                  # Can crusher
+    "Why?",                  # Birthday boy
+    "What?",                 # House
+    "Why?",                  # Toilet paper
+    "Why?",                  # Bike
+    "Sure, tell me!",        # Pizza
+    "Why?",                  # Chemists
+    "Why?",                  # Desert
+    "What did it say?",      # Cheese
+    "Why?",                  # Developer
+    "Really? Why?",          # Ants
+    "Why?",                  # Donut
+    "What?",                 # Bear
+    "What?",                 # Zombie
+    "What?",                 # Dinosaur
+    "Why?",                  # Tennis
+    "What did it say?",      # Glass
+    "What?",                 # Potato
+    "What did it say?",      # Ocean
+    "What did it say?",      # Eyes
+    "What?",                 # Dog
+    "What's the difference?",# Hippo and Zippo
+    "Why?"                   # Atoms
+]
 
 
-# Function to load jokes from the text file
+# Load jokes from the text file
 def loadJokes():
     jokes_list = []
 
-    # Find the folder where main.py is saved
-    folder_path = os.path.dirname(os.path.abspath(__file__))
-
-    # Create the full path to randomJokes.txt
-    file_path = os.path.join(folder_path, "randomJokes.txt")
+    # Find the folder containing main.py
+    folder = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(folder, "randomJokes.txt")
 
     try:
-        # Open the file and read each joke
         with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
                 line = line.strip()
 
-                # Ignore empty lines
-                if line:
-                    jokes_list.append(line)
+                # Split each joke into setup and punchline
+                if "?" in line:
+                    setup, punchline = line.split("?", 1)
+
+                    # Store the two parts together
+                    jokes_list.append(
+                        (setup.strip() + "?", punchline.strip())
+                    )
 
     except FileNotFoundError:
         messagebox.showerror(
@@ -50,137 +98,233 @@ def loadJokes():
     return jokes_list
 
 
-# Function to display a random joke
-def displayJoke():
-    global current_punchline
 
-    # Check if any jokes are available
+# Create a chat message with a small sender name
+def createMessage(sender, message):
+
+    # Choose colours and alignment for each sender
+    if sender == "Alexa":
+        bubble_color = CHAT_COLOR
+        font_color = TEXT_COLOR
+        side = "w"
+        sender_name = "alexa"
+    else:
+        bubble_color = BLUE_COLOR
+        font_color = WHITE
+        side = "e"
+        sender_name = "hamza"
+
+    # Create a container for the message
+    message_frame = tk.Frame(
+        chat_frame,
+        bg=BG_COLOR
+    )
+    message_frame.pack(
+        fill="x",
+        padx=15,
+        pady=5
+    )
+
+    # Display the sender's name in a smaller font
+    name_label = tk.Label(
+        message_frame,
+        text=sender_name,
+        font=("Georgia", 9, "italic"),
+        bg=BG_COLOR,
+        fg=GREY_COLOR
+    )
+    name_label.pack(anchor=side, padx=8, pady=(0, 3))
+
+    # Display the actual message in a separate bubble
+    bubble = tk.Label(
+        message_frame,
+        text=message,
+        font=("Arial", 12),
+        bg=bubble_color,
+        fg=font_color,
+        wraplength=440,
+        justify="left",
+        padx=15,
+        pady=10
+    )
+    bubble.pack(anchor=side)
+
+
+# Select and display a random joke
+def displayJoke():
+    global current_punchline, current_response
+
     if not jokes:
         messagebox.showwarning(
             "No Jokes",
-            "There are no jokes available."
+            "No jokes are available."
         )
         return
 
-    # Select a random joke
-    selected_joke = random.choice(jokes)
+    # Remove the previous conversation
+    for widget in chat_frame.winfo_children():
+        widget.destroy()
 
-    # Separate the joke question and punchline
-    if "?" in selected_joke:
-        question, punchline = selected_joke.split("?", 1)
+    # Randomly select a joke using its position
+    joke_index = random.randrange(len(jokes))
 
-        question = question.strip() + "?"
-        current_punchline = punchline.strip()
+    setup, punchline = jokes[joke_index]
+
+    current_punchline = punchline
+
+    # Choose the matching human response
+    if joke_index < len(human_responses):
+        current_response = human_responses[joke_index]
     else:
-        question = selected_joke
-        current_punchline = ""
+        current_response = "What?"
 
-    # Display the joke question
-    joke_label.config(text=question)
+    # Display Alexa's joke setup
+    createMessage("Alexa", setup)
 
-    # Hide the previous punchline
-    punchline_label.config(text="")
+    # Change the response button text
+    response_button.config(
+        text=current_response,
+        state="normal"
+    )
 
-    # Enable the punchline button
-    punchline_button.config(state="normal")
+    # Hide the starting button
+    start_button.pack_forget()
+
+    # Show the conversation buttons
+    response_button.pack(pady=10)
+    next_button.pack(pady=7)
 
 
-# Function to reveal the punchline
+# Show the human response and Alexa's punchline
 def showPunchline():
     if current_punchline:
-        punchline_label.config(
-            text=current_punchline
-        )
+        # Display what the human says
+        createMessage("You", current_response)
 
-        # Disable button after showing the punchline
-        punchline_button.config(state="disabled")
+        # Display Alexa's punchline
+        createMessage("Alexa", current_punchline)
 
-    else:
-        messagebox.showinfo(
-            "Joke Teller",
-            "Please select a joke first."
-        )
+        # Prevent the response from being clicked twice
+        response_button.config(state="disabled")
 
 
-# Function to display the welcome screen
-def displayWelcome():
-    global joke_label, punchline_label, punchline_button
-
-    # Application title
-    title_label = tk.Label(
-        root,
-        text="Alexa Tell Me a Joke",
-        font=("Arial", 24, "bold"),
-        bg=background_color,
-        fg=text_color
-    )
-    title_label.pack(pady=30)
-
-    # Welcome message
-    welcome_label = tk.Label(
-        root,
-        text="Welcome! Ready for some jokes?",
-        font=("Arial", 15),
-        bg=background_color,
-        fg=text_color
-    )
-    welcome_label.pack(pady=10)
-
-    # Button to select a random joke
-    joke_button = tk.Button(
-        root,
-        text="Tell Me a Joke",
-        font=("Arial", 13),
-        bg=button_color,
-        fg="white",
-        width=20,
-        command=displayJoke
-    )
-    joke_button.pack(pady=15)
-
-    # Label to display the joke question
-    joke_label = tk.Label(
-        root,
-        text="Your joke will appear here!",
-        font=("Arial", 15),
-        bg=background_color,
-        fg=text_color,
-        wraplength=550,
-        justify="center"
-    )
-    joke_label.pack(pady=15)
-
-    # Button to reveal the punchline
-    punchline_button = tk.Button(
-        root,
-        text="Show Punchline",
-        font=("Arial", 13),
-        bg=button_color,
-        fg="white",
-        width=20,
-        state="disabled",
-        command=showPunchline
-    )
-    punchline_button.pack(pady=15)
-
-    # Label to display the punchline
-    punchline_label = tk.Label(
-        root,
-        text="",
-        font=("Arial", 14, "bold"),
-        bg=background_color,
-        fg="#58D68D",
-        wraplength=550,
-        justify="center"
-    )
-    punchline_label.pack(pady=15)
+# Display another random joke
+def nextJoke():
+    displayJoke()
 
 
-# Load jokes when the application starts
+# Close the application
+def quitApp():
+    root.destroy()
+
+
+# Create the heading
+header = tk.Frame(
+    root,
+    bg=WHITE,
+    height=75
+)
+header.pack(fill="x")
+
+tk.Label(
+    header,
+    text="Alexa Joke Teller",
+    font=("Arial", 22, "bold"),
+    bg=WHITE,
+    fg=TEXT_COLOR
+).pack(pady=(12, 2))
+
+tk.Label(
+    header,
+    text="Your interactive joke assistant",
+    font=("Arial", 10),
+    bg=WHITE,
+    fg=GREY_COLOR
+).pack()
+
+
+# Create the chat area
+chat_frame = tk.Frame(
+    root,
+    bg=BG_COLOR,
+    height=310
+)
+chat_frame.pack(
+    fill="both",
+    expand=True,
+    padx=15,
+    pady=15
+)
+chat_frame.pack_propagate(False)
+
+
+# Starting message
+createMessage(
+    "Alexa",
+    "Hello! Ready for a joke?"
+)
+
+
+# Create the buttons area
+button_frame = tk.Frame(
+    root,
+    bg=BG_COLOR
+)
+button_frame.pack(pady=10)
+
+
+# Button shown when the application first opens
+start_button = tk.Button(
+    button_frame,
+    text="Alexa tell me a Joke",
+    font=("Arial", 13, "bold"),
+    bg=BLUE_COLOR,
+    fg=WHITE,
+    width=24,
+    command=displayJoke
+)
+start_button.pack(pady=10)
+
+
+# Human response button (hidden at first)
+response_button = tk.Button(
+    button_frame,
+    text="Why?",
+    font=("Arial", 12),
+    bg=BLUE_COLOR,
+    fg=WHITE,
+    width=24,
+    command=showPunchline
+)
+
+
+# Next Joke button (hidden at first)
+next_button = tk.Button(
+    button_frame,
+    text="Next Joke",
+    font=("Arial", 12),
+    bg=BLUE_COLOR,
+    fg=WHITE,
+    width=24,
+    command=nextJoke
+)
+
+
+# Quit button is always visible
+quit_button = tk.Button(
+    root,
+    text="Quit",
+    font=("Arial", 12),
+    bg="#E1E9F4",
+    fg=TEXT_COLOR,
+    width=24,
+    command=quitApp
+)
+quit_button.pack(pady=(5, 15))
+
+
+# Load all jokes from the text file
 jokes = loadJokes()
-
-# Display the welcome screen
-displayWelcome()
 
 # Keep the application running
 root.mainloop()
