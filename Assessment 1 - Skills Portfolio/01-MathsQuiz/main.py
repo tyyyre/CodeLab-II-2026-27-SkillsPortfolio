@@ -3,76 +3,102 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 
-# Main application window
+# Create the main window
 root = tk.Tk()
 root.title("Maths Quiz")
 root.geometry("600x500")
 root.resizable(False, False)
-
-# Application colours
-BG_COLOR = "#172033"
-FG_COLOR = "#FFFFFF"
-BUTTON_COLOR = "#4169E1"
-
-root.configure(bg=BG_COLOR)
+root.configure(bg="#152238")
 
 # Quiz variables
 min_number = 1
 max_number = 9
 question_number = 0
 score = 0
-
-first_number = 0
-second_number = 0
-operation = "+"
-correct_answer = 0
 attempts = 0
+correct_answer = 0
+
+# Used to manage the next question
+next_question_timer = None
+quiz_active = False
+
+# Window colours
+background_color = "#152238"
+button_color = "#2874A6"
+text_color = "white"
 
 
-# Remove all widgets from the window
+# Remove everything from the window
 def clear_window():
     for widget in root.winfo_children():
         widget.destroy()
 
 
-# Display the home menu
+# Cancel any question that is waiting to appear
+def cancel_timer():
+    global next_question_timer
+
+    if next_question_timer is not None:
+        root.after_cancel(next_question_timer)
+        next_question_timer = None
+
+
+# Show the home menu
 def displayMenu():
+    global quiz_active
+
+    quiz_active = False
+    cancel_timer()
     clear_window()
 
     tk.Label(
         root,
-        text="MATHS QUIZ",
-        font=("Arial", 28, "bold"),
-        bg=BG_COLOR,
-        fg=FG_COLOR
+        text="Welcome to Maths Quiz",
+        font=("Arial", 24, "bold"),
+        bg=background_color,
+        fg=text_color
     ).pack(pady=35)
 
     tk.Label(
         root,
-        text="Select Your Difficulty Level",
-        font=("Arial", 16),
-        bg=BG_COLOR,
-        fg=FG_COLOR
+        text="Choose Your Difficulty Level",
+        font=("Arial", 15),
+        bg=background_color,
+        fg=text_color
     ).pack(pady=15)
 
-    # Available difficulty levels
-    difficulties = [
-        ("Easy", 1, 9),
-        ("Moderate", 10, 99),
-        ("Advanced", 1000, 9999)
-    ]
+    # Easy difficulty
+    tk.Button(
+        root,
+        text="Easy",
+        font=("Arial", 14),
+        bg=button_color,
+        fg="white",
+        width=20,
+        command=lambda: startQuiz(1, 9)
+    ).pack(pady=10)
 
-    for name, minimum, maximum in difficulties:
-        tk.Button(
-            root,
-            text=name,
-            font=("Arial", 14, "bold"),
-            width=20,
-            bg=BUTTON_COLOR,
-            fg=FG_COLOR,
-            command=lambda low=minimum, high=maximum:
-                startQuiz(low, high)
-        ).pack(pady=8)
+    # Moderate difficulty
+    tk.Button(
+        root,
+        text="Moderate",
+        font=("Arial", 14),
+        bg=button_color,
+        fg="white",
+        width=20,
+        command=lambda: startQuiz(10, 99)
+    ).pack(pady=10)
+
+    # Advanced difficulty
+    tk.Button(
+        root,
+        text="Advanced",
+        font=("Arial", 14),
+        bg=button_color,
+        fg="white",
+        width=20,
+        command=lambda: startQuiz(1000, 9999)
+    ).pack(pady=10)
 
 
 # Generate a random number
@@ -85,21 +111,23 @@ def decideOperation():
     return random.choice(["+", "-"])
 
 
-
 # Start a new quiz
 def startQuiz(minimum, maximum):
     global min_number, max_number
-    global question_number, score, attempts
+    global question_number, score, attempts, quiz_active
+
+    cancel_timer()
 
     min_number = minimum
     max_number = maximum
 
-    # Reset all quiz values
+    # Reset values for a new quiz
     question_number = 0
     score = 0
     attempts = 0
+    quiz_active = True
 
-    # Show a starting message
+    # Starting popup
     messagebox.showinfo(
         "Maths Quiz",
         "Your quiz is starting!\n\nGood luck!"
@@ -110,64 +138,56 @@ def startQuiz(minimum, maximum):
 
 # Display a maths question
 def displayProblem():
-    global first_number, second_number
-    global operation, correct_answer, attempts
-    global answer_entry, feedback_label
+    global question_number, attempts, correct_answer
+    global answer_entry, feedback_label, submit_button
+    global next_question_timer
 
+    if not quiz_active:
+        return
+
+    next_question_timer = None
     clear_window()
 
-    # Generate two random numbers
-    first_number = randomInt(min_number, max_number)
-    second_number = randomInt(min_number, max_number)
+    question_number += 1
+    attempts = 0
 
-    # Select addition or subtraction
+    # Generate two random numbers
+    number1 = randomInt(min_number, max_number)
+    number2 = randomInt(min_number, max_number)
+
     operation = decideOperation()
 
     # Calculate the correct answer
     if operation == "+":
-        correct_answer = first_number + second_number
+        correct_answer = number1 + number2
     else:
-        correct_answer = first_number - second_number
+        correct_answer = number1 - number2
 
-    attempts = 0
-
-    # Quiz heading
     tk.Label(
         root,
-        text="MATHS QUIZ",
-        font=("Arial", 24, "bold"),
-        bg=BG_COLOR,
-        fg=FG_COLOR
-    ).pack(pady=15)
+        text=f"Question {question_number} of 10",
+        font=("Arial", 20, "bold"),
+        bg=background_color,
+        fg=text_color
+    ).pack(pady=25)
 
-    # Display question number
     tk.Label(
         root,
-        text=f"Question {question_number + 1} of 10",
+        text=f"Current Score: {score}",
         font=("Arial", 13),
-        bg=BG_COLOR,
-        fg=FG_COLOR
+        bg=background_color,
+        fg="#58D68D"
     ).pack(pady=5)
 
-    # Display current score
     tk.Label(
         root,
-        text=f"Score: {score}/100",
-        font=("Arial", 13, "bold"),
-        bg=BG_COLOR,
-        fg="#FFD700"
-    ).pack(pady=5)
-
-    # Display the maths question
-    tk.Label(
-        root,
-        text=f"{first_number} {operation} {second_number} = ?",
-        font=("Arial", 30, "bold"),
-        bg=BG_COLOR,
-        fg=FG_COLOR
+        text=f"{number1} {operation} {number2} = ?",
+        font=("Arial", 28, "bold"),
+        bg=background_color,
+        fg=text_color
     ).pack(pady=20)
 
-    # Answer input field
+    # Answer input
     answer_entry = tk.Entry(
         root,
         font=("Arial", 18),
@@ -175,128 +195,171 @@ def displayProblem():
         width=15
     )
     answer_entry.pack(pady=10)
-    answer_entry.focus()
+    answer_entry.focus_set()
 
-    # Submit answer button
-    tk.Button(
+    # Submit button
+    submit_button = tk.Button(
         root,
         text="Submit Answer",
-        font=("Arial", 13, "bold"),
-        bg=BUTTON_COLOR,
-        fg=FG_COLOR,
+        font=("Arial", 13),
+        bg=button_color,
+        fg="white",
         width=18,
         command=checkAnswer
-    ).pack(pady=10)
+    )
+    submit_button.pack(pady=10)
 
-    # Feedback message
+    # Display feedback to the student
     feedback_label = tk.Label(
         root,
-        text="Enter your answer above",
+        text="",
         font=("Arial", 12),
-        bg=BG_COLOR,
-        fg=FG_COLOR
+        bg=background_color,
+        fg=text_color
     )
-    feedback_label.pack(pady=5)
+    feedback_label.pack(pady=10)
 
-    # Back button to return to home menu
+    # Back button
     tk.Button(
         root,
         text="← Back to Home",
-        font=("Arial", 11),
-        bg="#555555",
-        fg=FG_COLOR,
-        width=18,
+        font=("Arial", 12),
+        bg="#566573",
+        fg="white",
         command=displayMenu
-    ).pack(pady=10)
+    ).pack(pady=15)
 
 
-# Check the user's answer
+# Check the student's answer
 def checkAnswer():
-    global attempts, score, question_number
+    global attempts
 
-    user_answer = answer_entry.get()
+    if not quiz_active:
+        return
 
-    # Check whether the input is a valid number
+    # Prevent multiple submissions while waiting
+    if next_question_timer is not None:
+        return
+
+    user_answer = answer_entry.get().strip()
+
+    # Check if the answer is a valid number
     try:
         user_answer = int(user_answer)
     except ValueError:
-        feedback_label.config(
-            text="Please enter a valid number!",
-            fg="#FF6666"
+        messagebox.showwarning(
+            "Invalid Answer",
+            "Please enter a valid whole number."
         )
         return
 
     attempts += 1
 
+    # Check if the answer is correct
     if user_answer == correct_answer:
-
-        # Award points for a correct answer
         isCorrect(True)
-
-        question_number += 1
-
-        if question_number == 10:
-            messagebox.showinfo(
-                "Quiz Complete",
-                f"You completed all 10 questions!\n\n"
-                f"Your score: {score}/100"
-            )
-            displayMenu()
-        else:
-            root.after(1200, displayProblem)
+        schedule_next_question()
 
     else:
-
         if attempts == 1:
             feedback_label.config(
-                text="Incorrect! Try one more time.",
-                fg="#FF6666"
+                text="Incorrect! Try again.",
+                fg="#F4D03F"
             )
 
             answer_entry.delete(0, tk.END)
+            answer_entry.focus_set()
 
         else:
-            feedback_label.config(
-                text=f"Incorrect! Correct answer: {correct_answer}",
-                fg="#FF6666"
-            )
-
-            question_number += 1
-
-            if question_number == 10:
-                messagebox.showinfo(
-                    "Quiz Complete",
-                    f"You completed all 10 questions!\n\n"
-                    f"Your score: {score}/100"
-                )
-                displayMenu()
-            else:
-                root.after(1500, displayProblem)
+            isCorrect(False)
+            schedule_next_question()
 
 
-# Check whether the answer is correct and award points
+# Award points and show feedback
 def isCorrect(correct):
     global score
 
     if correct:
         if attempts == 1:
             score += 10
-
             feedback_label.config(
                 text="Correct! You earned 10 points.",
-                fg="#66FF99"
+                fg="#58D68D"
             )
         else:
             score += 5
-
             feedback_label.config(
                 text="Correct! You earned 5 points.",
-                fg="#66FF99"
+                fg="#58D68D"
             )
+    else:
+        feedback_label.config(
+            text=f"Incorrect! The correct answer was {correct_answer}.",
+            fg="#EC7063"
+        )
 
 
-# Display the starting menu
+# Wait briefly before displaying the next question
+def schedule_next_question():
+    global next_question_timer
+
+    # Stop students from submitting again
+    submit_button.config(state="disabled")
+    answer_entry.config(state="disabled")
+
+    if question_number >= 10:
+        next_question_timer = root.after(1200, displayResults)
+    else:
+        next_question_timer = root.after(1200, displayProblem)
+
+
+# Show final results and rank
+def displayResults():
+    global quiz_active, next_question_timer
+
+    if not quiz_active:
+        return
+
+    next_question_timer = None
+    quiz_active = False
+
+    # Calculate rank
+    if score >= 90:
+        rank = "A+"
+    elif score >= 80:
+        rank = "A"
+    elif score >= 70:
+        rank = "B"
+    elif score >= 60:
+        rank = "C"
+    elif score >= 50:
+        rank = "D"
+    else:
+        rank = "F"
+
+    # Final results popup
+    messagebox.showinfo(
+        "Quiz Completed!",
+        f"You completed all 10 questions!\n\n"
+        f"Your Score: {score}/100\n"
+        f"Your Rank: {rank}\n\n"
+        "Well done!"
+    )
+
+    # Ask if the student wants to play again
+    play_again = messagebox.askyesno(
+        "Play Again",
+        "Would you like to play another quiz?"
+    )
+
+    if play_again:
+        displayMenu()
+    else:
+        root.destroy()
+
+
+# Display the home menu when the program starts
 displayMenu()
 
-# Run the application
+# Keep the application running
 root.mainloop()
