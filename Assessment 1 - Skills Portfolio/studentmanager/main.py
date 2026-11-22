@@ -176,6 +176,7 @@ def viewAllStudents():
     ).pack(pady=10)
 
 def displayMenu():
+    
 
     # Application heading
     tk.Label(
@@ -206,8 +207,16 @@ def displayMenu():
         "Update Student Record"
     ]
 
+    
     # Create buttons for each menu option
-    for option in menu_options:
+    for index, option in enumerate(menu_options):
+
+        # Connect the first button to View All Students
+        if index == 0:
+            action = viewAllStudents
+        else:
+            action = None
+
         tk.Button(
             root,
             text=option,
@@ -215,8 +224,10 @@ def displayMenu():
             bg=BLUE_COLOR,
             fg=WHITE,
             width=30,
-            pady=5
+            pady=5,
+            command=action
         ).pack(pady=5)
+
 
     # Quit button
     tk.Button(
@@ -235,6 +246,7 @@ students = loadStudents()
 
 # Display the main menu
 displayMenu()
+
 
 # Keep the application running
 root.mainloop()
