@@ -42,6 +42,31 @@ def displayWelcome():
     welcome_label.pack(pady=20)
 
 
+# Function to read jokes from the text file
+def loadJokes():
+    jokes = []
+
+    try:
+        # Open the jokes file
+        with open("randomJokes.txt", "r", encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+
+                # Ignore empty lines
+                if line:
+                    jokes.append(line)
+
+    except FileNotFoundError:
+        messagebox.showerror(
+            "File Error",
+            "randomJokes.txt could not be found."
+        )
+
+    return jokes
+
+# Load all jokes into a list
+jokes = loadJokes()
+
 # Call the welcome function
 displayWelcome()
 
