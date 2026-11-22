@@ -85,6 +85,7 @@ def decideOperation():
     return random.choice(["+", "-"])
 
 
+
 # Start a new quiz
 def startQuiz(minimum, maximum):
     global min_number, max_number
@@ -97,6 +98,12 @@ def startQuiz(minimum, maximum):
     question_number = 0
     score = 0
     attempts = 0
+
+    # Show a starting message
+    messagebox.showinfo(
+        "Maths Quiz",
+        "Your quiz is starting!\n\nGood luck!"
+    )
 
     displayProblem()
 
