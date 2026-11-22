@@ -212,8 +212,10 @@ def displayMenu():
     for index, option in enumerate(menu_options):
 
         # Connect the first button to View All Students
-        if index == 0:
+                if index == 0:
             action = viewAllStudents
+        elif index == 1:
+            action = viewIndividualStudent
         else:
             action = None
 
@@ -245,6 +247,95 @@ def displayMenu():
 students = loadStudents()
 
 # Display the main menu
+
+# Search for and display an individual student
+def viewIndividualStudent():
+    clearWindow()
+
+    tk.Label(
+        root,
+        text="View Individual Student",
+        font=("Arial", 23, "bold"),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR
+    ).pack(pady=30)
+
+    tk.Label(
+        root,
+        text="Enter Student Number:",
+        font=("Arial", 13),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR
+    ).pack(pady=10)
+
+    # Entry box for student number
+    student_entry = tk.Entry(
+        root,
+        font=("Arial", 14),
+        justify="center"
+    )
+    student_entry.pack(pady=10)
+
+    # Label to display the search result
+    result_label = tk.Label(
+        root,
+        text="",
+        font=("Arial", 12),
+        bg=BG_COLOR,
+        fg=TEXT_COLOR,
+        justify="left"
+    )
+    result_label.pack(pady=20)
+
+    # Search for the entered student number
+    def searchStudent():
+        student_number = student_entry.get().strip()
+
+        for student in students:
+            if student["code"] == student_number:
+                coursework = calculateCoursework(student)
+                percentage = calculatePercentage(student)
+                grade = calculateGrade(percentage)
+
+                result_label.config(
+                    text=(
+                        f"Name: {student['name']}\n"
+                        f"Student Number: {student['code']}\n"
+                        f"Coursework: {coursework}/60\n"
+                        f"Exam Mark: {student['exam']}/100\n"
+                        f"Overall Percentage: {percentage:.2f}%\n"
+                        f"Grade: {grade}"
+                    )
+                )
+                return
+
+        # Display a message if the student is not found
+        result_label.config(
+            text="Student not found. Please try again."
+        )
+
+    # Search button
+    tk.Button(
+        root,
+        text="Search Student",
+        font=("Arial", 12),
+        bg=BLUE_COLOR,
+        fg=WHITE,
+        width=20,
+        command=searchStudent
+    ).pack(pady=10)
+
+    # Back button
+    tk.Button(
+        root,
+        text="Back to Menu",
+        font=("Arial", 12),
+        bg=BLUE_COLOR,
+        fg=WHITE,
+        width=20,
+        command=displayMenu
+    ).pack(pady=10)
+
 displayMenu()
 
 
